@@ -26,19 +26,37 @@ ChartJS.register(
 
 const Search = () => {
   let location = useLocation();
-  const [searchTerm, setSearchterm] = useState("");
+  const [searchTerm, setSearchterm] = useState(undefined);
+  const [products, setProducts] = useState([]);
   const [visible, setVisible] = useState(10);
 
   useEffect(() => {
     if (location.search !== "") {
       const input = location.search.split("=")[1];
       setSearchterm(input);
+    } else {
+      setSearchterm("");
     }
+    setProducts(JSONDATA);
   }, []);
 
   const showMore = () => {
     setVisible((prevValue) => prevValue + 10);
   };
+
+  function handleSort(e) {
+    if (e.target.value === "low-to-high") {
+      const sortedProducts = [...products];
+      sortedProducts.sort((a, b) => parseFloat(a.price) - parseFloat(b.price));
+      setProducts(sortedProducts);
+    } else {
+      const sortedProducts = [...products];
+      sortedProducts.sort((b, a) => parseFloat(a.price) - parseFloat(b.price));
+      setProducts(sortedProducts);
+    }
+  }
+
+  if (searchTerm === undefined) return <p>Loading...</p>;
 
   return (
     <section className="searchpage">
@@ -68,26 +86,31 @@ const Search = () => {
           <p className="pricefilter">
             {" "}
             sort by:{" "}
-            <select name="price" id="price">
+            <select onChange={handleSort} name="price" id="price">
               <option value="price">price</option>
               <option value="low-to-high">low to high</option>
               <option value="high-to-low">high to low</option>
             </select>{" "}
           </p>
           <div class="box-container">
-            {JSONDATA.filter((val) => {
-              if (searchTerm === "") {
-                return val;
-              } else if (
-                val.first_name.toLowerCase().includes(searchTerm.toLowerCase())
-              ) {
-                return val;
-              } else if (
-                val.description.toLowerCase().includes(searchTerm.toLowerCase())
-              ) {
-                return val;
-              }
-            })
+            {products
+              .filter((val) => {
+                if (searchTerm === "") {
+                  return val;
+                } else if (
+                  val.first_name
+                    .toLowerCase()
+                    .includes(searchTerm.toLowerCase())
+                ) {
+                  return val;
+                } else if (
+                  val.description
+                    .toLowerCase()
+                    .includes(searchTerm.toLowerCase())
+                ) {
+                  return val;
+                }
+              })
               .slice(0, visible)
               .map((val, key) => {
                 return (
@@ -95,12 +118,16 @@ const Search = () => {
                     <span class="discount">-10%</span>
                     <div class="image">
                       <img src="images/img-1.jpg" alt="" />
+
                       <div class="icons">
                         <a href="#popup2" class="cart-btn">
                           view Details
                         </a>
                       </div>
                     </div>
+
+                    <button className="btn">view on store</button>
+
                     <div class="content">
                       <h3> {val.first_name} </h3>
                       <p>{val.description}</p>
@@ -113,7 +140,7 @@ const Search = () => {
                 );
               })}
 
-            {JSONDATA.map((value, key) => {
+            {products.map((value, key) => {
               return (
                 <div id="popup2" class="overlay light" key={key}>
                   <a class="cancel" href="#"></a>
